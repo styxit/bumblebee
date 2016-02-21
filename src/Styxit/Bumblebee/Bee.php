@@ -2,8 +2,8 @@
 
 namespace Styxit\Bumblebee;
 
-use Stringy\StaticStringy as S;
 use Stringy\Stringy;
+use Styxit\Bumblebee\Utilities\Word;
 
 /**
  * Transformer class.
@@ -50,7 +50,7 @@ class Bee
         // Loop input words.
         foreach($wordArray as $word) {
             if (mb_strlen($word) <= 3) {
-                $word = self::reverseWord($word, true);
+                $word = Word::reverse($word, true);
             }
 
             $outArray[] = $word;
@@ -82,7 +82,7 @@ class Bee
         foreach($wordArray as $wordPosition => $word) {
 
             if (fmod(($wordPosition+1), 3) == 0) {
-                $word = self::reverseWord($word, true);
+                $word = Word::reverse($word, true);
                 $prevWord = $outArray[$wordPosition-1];
 
                 // Swith word from position.
@@ -123,7 +123,7 @@ class Bee
 
         // Loop input words.
         foreach($wordArray as $wordPosition => $word) {
-            $outArray[] = self::shuffleWord($word);
+            $outArray[] = Word::shuffle($word);
         }
 
         return implode(' ', $outArray);
@@ -168,85 +168,6 @@ class Bee
         }
 
         return $outStr;
-    }
-
-
-    /**
-     * Shuffle the characters of a word, except the first and last character.
-     *
-     * @param $word The in put string to shuffle.
-     *
-     * @return string The suffled word.
-     */
-    private static function shuffleWord($word) {
-        if (mb_strlen($word) <= 3) {
-            return $word;
-        }
-
-        // Store the first and last character.
-        $firstChar = mb_substr($word, 0, 1);
-        $lastChar = mb_substr($word, -1);
-
-        // Remove first and last character from the string.
-        $otherCharacters = mb_substr(mb_substr($word, 1) , 0, -1);
-
-        // Shuffle the characters.
-        $shuffled = (string) S::shuffle($otherCharacters, 'UTF-8');
-
-        return $firstChar . $shuffled . $lastChar;
-    }
-
-
-    /**
-     * Reverse a word.
-     *
-     * @param      $word             Input text.
-     * @param bool $keepCasePosition When true, the position of the upper and lower cases is maintained
-     *                               in the reversed string.
-     *
-     * @return string The reverse verion of $word.
-     */
-    private static function reverseWord($word, $keepCasePosition = false) {
-        if (is_numeric($word)) {
-            return $word;
-        }
-
-        // Check the last character in the string for punctuation.
-        $lastCharacter = substr($word, -1);
-        if (ctype_punct($lastCharacter)) {
-            // Reverse the word but do not include the last character.
-            $revWord = S::reverse(mb_substr($word, 0, -1));
-        } else {
-            // Reverse the word.
-            $revWord = S::reverse($word);
-        }
-
-        // Check if case position must be kept.
-        if ($keepCasePosition) {
-            $reverseWordString = '';
-            // Upper- and lowercase character position must remain.
-            // Match character case in the original string with that of the reversed character at that position.
-            foreach (S::chars($word) as $characterPosition => $character) {
-                $c = Stringy::create($character, 'UTF-8');
-                $rc = $revWord->at($characterPosition);
-
-                if (($c->hasUpperCase() && !$rc->hasUpperCase()) || ($c->hasLowerCase() && !$rc->hasLowerCase())) {
-                    // The case of the original character and the replaced character do not match.
-                    $rc = $rc->swapCase();
-                }
-
-                $reverseWordString .= (string)$rc;
-            }
-        } else {
-            $reverseWordString = (string)$revWord;
-        }
-
-        // Add last punctuation character if needed.
-        if (strlen($reverseWordString) != strlen($word)) {
-            $reverseWordString .= $lastCharacter;
-        }
-
-        return $reverseWordString;
     }
 
 }
