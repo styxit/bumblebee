@@ -1,0 +1,15 @@
+{
+    "name":"styxit/bumblebee",
+    "description":"Text transformer package test",
+    "authors":[
+        {
+            "name":"Styxit",
+            "email":"info@styxit.com"
+        }
+    ],
+    "autoload":{
+        "psr-0":{
+            "Styxit\\Bumblebee":"src"
+        }
+    }
+}
