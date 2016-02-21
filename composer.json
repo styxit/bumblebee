@@ -7,6 +7,10 @@
             "email":"info@styxit.com"
         }
     ],
+
+    "require": {
+        "danielstjules/stringy": "2.2.0"
+    },
     "autoload":{
         "psr-0":{
             "Styxit\\Bumblebee":"src"
