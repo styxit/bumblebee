@@ -2,17 +2,14 @@
 
 namespace Styxit\Bumblebee;
 
+use Stringy\StaticStringy as S;
+use Stringy\Stringy;
+
 /**
  * Transformer class.
  */
 class Bee
 {
-    public static function welcome()
-    {
-        return 'Hi, welcome.';
-    }
-
-
     /**
      * Soort 1: Vervang ieder woord van 1 t/m 3 letters, door hetzelfde woord maar dan achterstevoren geschreven
      * waarbij de hoofdletters op dezelfde positie blijven. ‘Wij’ wordt dus ‘Jiw’.
@@ -26,7 +23,6 @@ class Bee
      * @return string
      */
     public static function type1($txt) {
-
         // Split text into word array
         $wordArray = explode(' ', $txt);
 
@@ -40,7 +36,6 @@ class Bee
 
             $outArray[] = $word;
         }
-
 
         return implode(' ', $outArray);
     }
@@ -74,10 +69,7 @@ class Bee
                 // Swith word from position.
                 $outArray[$wordPosition-1] = $word;
 
-
                 $word = $prevWord;
-
-
             }
 
             $outArray[] = $word;
@@ -88,62 +80,154 @@ class Bee
     }
 
 
+    /**
+     * Soort 3:
+     * Onderzoek heeft uitgewezen dat de volgorde van letters in een woord niet heel erg belangrijk
+     * is voor de leesbaarheid. Zolang de eerste en de laatste letter van een woord op hun plaats staan,
+     * maakt de volgorde van de overige letters weinig uit. Zorg ervoor dat de het script instaat is om
+     * input zoals bovenstaande tekst om te zetten volgens dit principe. De volgorde van de letters tussen
+     * de eerste en laatste letter mag random zijn.
+     *
+     * Voorbeeld output:
+     * “Wij deon ites geod of wij deon het neit. Wij beaerspn neit op ozne secvrie, auurptaapr en fieteliaictn.”
+     *
+     *
+     * @param $txt
+     *
+     * @return string
+     */
+    public static function type3($txt) {
+        // Split text into word array
+        $wordArray = explode(' ', $txt);
+        // Collect output words.
+        $outArray = [];
+
+        // Loop input words.
+        foreach($wordArray as $wordPosition => $word) {
+            $outArray[] = self::shuffleWord($word);
+        }
+
+        return implode(' ', $outArray);
+    }
+
+
+    /**
+     * Soort 4:
+     * In deze tekst willen we karakters vervangen op basis van zijn voorganger.
+     * Ieder karakter heeft een waarde in de ASCII tabel. Is de waarde van zijn voorganger groter,
+     * vervang dan het karakter met het volgende karakter volgens de ASCII tabel, is deze kleiner, vervang dan het
+     * karakter met het vorige karakter volgens de ASCII tabel. Is de waarde identiek, doe dan niks.
+     * Het eerste karakter heeft geen voorganger dus, ook deze kun je laten zoals het is.
+     *
+     * @param $txt The input string.
+     *
+     * @return string The converted string.
+     */
+    public static function type4($txt) {
+        // Split text into word array
+        $txt = Stringy::create($txt, 'UTF-8');
+
+        $outStr = '';
+
+        $prevCharAscii = null;
+
+        // Loop characters.
+        foreach($txt->chars() as $characterPosition => $character) {
+            $characterAscii = ord($character);
+
+            if($prevCharAscii){
+                if ($prevCharAscii > $characterAscii) {
+                    $character = chr($characterAscii + 1);
+                } elseif ($prevCharAscii < $characterAscii) {
+                    $character = chr($characterAscii - 1);
+                }
+            }
+
+            $prevCharAscii = $characterAscii;
+
+            $outStr .= $character;
+        }
+
+        return $outStr;
+    }
+
+
+    /**
+     * Shuffle the characters of a word, except the first and last character.
+     *
+     * @param $word The in put string to shuffle.
+     *
+     * @return string The suffled word.
+     */
+    private static function shuffleWord($word) {
+        if (mb_strlen($word) <= 3) {
+            return $word;
+        }
+
+        // Store the first and last character.
+        $firstChar = mb_substr($word, 0, 1);
+        $lastChar = mb_substr($word, -1);
+
+        // Remove first and last character from the string.
+        $otherCharacters = mb_substr(mb_substr($word, 1) , 0, -1);
+
+        // Shuffle the characters.
+        $shuffled = (string) S::shuffle($otherCharacters, 'UTF-8');
+
+        return $firstChar . $shuffled . $lastChar;
+    }
+
+
+    /**
+     * Reverse a word.
+     *
+     * @param      $word             Input text.
+     * @param bool $keepCasePosition When true, the position of the upper and lower cases is maintained
+     *                               in the reversed string.
+     *
+     * @return string The reverse verion of $word.
+     */
     private static function reverseWord($word, $keepCasePosition = false) {
-        setLocale(LC_ALL, 'NL_nl.UTF-8');
+        if (is_numeric($word)) {
+            return $word;
+        }
 
         // Check the last character in the string for punctuation.
         $lastCharacter = substr($word, -1);
         if (ctype_punct($lastCharacter)) {
             // Reverse the word but do not include the last character.
-            $revWord = self::mb_strrev(mb_substr($word, 0, -1));
+            $revWord = S::reverse(mb_substr($word, 0, -1));
         } else {
             // Reverse the word.
-            $revWord = self::mb_strrev($word);
+            $revWord = S::reverse($word);
         }
 
         // Check if case position must be kept.
-        if (!$keepCasePosition) {
+        if ($keepCasePosition) {
+            $reverseWordString = '';
             // Upper- and lowercase character position must remain.
             // Match character case in the original string with that of the reversed character at that position.
+            foreach (S::chars($word) as $characterPosition => $character) {
+                $c = Stringy::create($character, 'UTF-8');
+                $rc = $revWord->at($characterPosition);
 
-            foreach (self::mb_str_split($word) as $characterPosition => $character) {
-                if (ctype_upper($character) && !ctype_upper($revWord[$characterPosition])) {
-                    //$revWord[$characterPosition] = mb_convert_case($revWord[$characterPosition], MB_CASE_UPPER, "UTF-8");
-                    $revWord[$characterPosition] = mb_strtoupper($revWord[$characterPosition], "UTF-8");
-                } elseif (ctype_lower($character) && !ctype_lower($revWord[$characterPosition])) {
-                    //$revWord[$characterPosition] = mb_convert_case($revWord[$characterPosition], MB_CASE_LOWER, "UTF-8");
-                    $revWord[$characterPosition] = mb_strtolower($revWord[$characterPosition], "UTF-8");
+                if (($c->hasUpperCase() && !$rc->hasUpperCase()) || ($c->hasLowerCase() && !$rc->hasLowerCase())) {
+                    // The case of the original character and the replaced character do not match.
+                    $rc = $rc->swapCase();
                 }
-                echo $word;
+
+                $reverseWordString .= (string)$rc;
             }
+        } else {
+            $reverseWordString = (string)$revWord;
         }
 
         // Add last punctuation character if needed.
-        if (strlen($revWord) != strlen($word)) {
-            $revWord .= $lastCharacter;
+        if (strlen($reverseWordString) != strlen($word)) {
+            $reverseWordString .= $lastCharacter;
         }
 
-        return $revWord;
-    }
-
-
-    static function mb_str_split( $string ) {
-        # Split at all position not after the start: ^
-        # and not before the end: $
-        return preg_split('/(?<!^)(?!$)/u', $string );
-    }
-
-    static function mb_strrev($string) {
-        $encoding = mb_detect_encoding($string);
-
-
-        $length   = mb_strlen($string, $encoding);
-        $reversed = '';
-        while ($length-- > 0) {
-            $reversed .= mb_substr($string, $length, 1, $encoding);
-        }
-
-        return $reversed;
+        return $reverseWordString;
     }
 
 }
