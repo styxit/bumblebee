@@ -10,6 +10,25 @@ use Stringy\Stringy;
  */
 class Bee
 {
+
+    /**
+     * Let Bumblebee transform a string according to one of the four defined transform methods.
+     *
+     * @param int    $transformType The transform type to use.
+     * @param string $inputTxt      The input text to transform.
+     *
+     * @return string The transformed intput text.
+     */
+    public static function transform(int $transformType, string $inputTxt)
+    {
+        if (!in_array($transformType, [1, 2, 3, 4])) {
+            return $inputTxt;
+        }
+
+        $methodName = 'type'.$transformType;
+
+        return self::{$methodName}($inputTxt);
+    }
     /**
      * Soort 1: Vervang ieder woord van 1 t/m 3 letters, door hetzelfde woord maar dan achterstevoren geschreven
      * waarbij de hoofdletters op dezelfde positie blijven. ‘Wij’ wordt dus ‘Jiw’.
@@ -22,7 +41,7 @@ class Bee
      *
      * @return string
      */
-    public static function type1($txt) {
+    private static function type1($txt) {
         // Split text into word array
         $wordArray = explode(' ', $txt);
 
@@ -53,7 +72,7 @@ class Bee
      *
      * @return string
      */
-    public static function type2($txt) {
+    private static function type2($txt) {
         // Split text into word array
         $wordArray = explode(' ', $txt);
 
@@ -96,7 +115,7 @@ class Bee
      *
      * @return string
      */
-    public static function type3($txt) {
+    private static function type3($txt) {
         // Split text into word array
         $wordArray = explode(' ', $txt);
         // Collect output words.
@@ -123,7 +142,7 @@ class Bee
      *
      * @return string The converted string.
      */
-    public static function type4($txt) {
+    private static function type4($txt) {
         // Split text into word array
         $txt = Stringy::create($txt, 'UTF-8');
 
