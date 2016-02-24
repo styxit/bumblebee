@@ -1,6 +1,6 @@
 <?php
 
-namespace Styxit\Bumblebee\Utilities;
+namespace Bumblebee\Utilities;
 
 use Stringy\StaticStringy as S;
 use Stringy\Stringy;

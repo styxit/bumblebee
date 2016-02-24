@@ -1,9 +1,9 @@
 <?php
 
-namespace Styxit\Bumblebee;
+namespace Bumblebee;
 
 use Stringy\Stringy;
-use Styxit\Bumblebee\Utilities\Word;
+use Bumblebee\Utilities\Word;
 
 /**
  * Transformer class.
