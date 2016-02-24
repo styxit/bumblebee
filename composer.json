@@ -12,8 +12,8 @@
         "danielstjules/stringy": "2.2.0"
     },
     "autoload":{
-        "psr-0":{
-            "Styxit\\Bumblebee":"src"
+        "psr-4": {
+          "Bumblebee\\": "src/Bumblebee"
         }
     }
 }
